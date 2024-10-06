@@ -74,6 +74,10 @@ def upload_file():
     # Return the main HTML page on GET request
     return render_template('app.html')
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return "An internal error occurred: {}".format(str(e)), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
