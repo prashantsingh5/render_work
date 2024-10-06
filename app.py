@@ -1,10 +1,16 @@
 import os
+import io
+import time
+import logging
 from flask import Flask, request, render_template, jsonify
 import torch
 import torch.nn as nn
 from torchvision import transforms, models
+from torchvision.models import ResNet50_Weights
 from PIL import Image
-import io
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -12,10 +18,9 @@ app = Flask(__name__)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the pre-trained ResNet50 model and modify the output layer
-model = models.resnet50(pretrained=False)
+model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
 model.fc = nn.Linear(model.fc.in_features, 3)  # Adjust for your 3 classes
-model.load_state_dict(torch.load('models/best_bone_cancer_model.pth', map_location=device))
-
+model.load_state_dict(torch.load('models/best_bone_cancer_model.pth', map_location=device, weights_only=True))
 model.to(device).eval()  # Set the model to evaluation mode
 
 # Define the transformation to match training
@@ -26,9 +31,13 @@ transform = transforms.Compose([
 ])
 
 def predict_image(image_file):
+    start_time = time.time()
+    
     # Read the image file
     image = Image.open(image_file).convert('RGB')
-    
+    load_time = time.time() - start_time
+    app.logger.info(f"Image load time: {load_time:.2f} seconds")
+
     # Preprocess the image and add batch dimension
     image = transform(image).unsqueeze(0).to(device)
     
@@ -76,8 +85,8 @@ def upload_file():
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    app.logger.error(f"An internal error occurred: {str(e)}")
     return "An internal error occurred: {}".format(str(e)), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)
