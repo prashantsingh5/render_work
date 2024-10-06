@@ -70,7 +70,6 @@
 
                 // Check if the response is OK (status code 200-299)
                 if (response.ok) {
-                    // Try to parse the response as JSON
                     const result = await response.json();
 
                     // Display results
@@ -82,14 +81,12 @@
                     document.getElementById('result').style.display = 'block';
                     document.getElementById('error').style.display = 'none';
                 } else {
-                    // If the response is not ok, try to extract and display the error
-                    const errorResult = await response.json();
-                    document.getElementById('error').innerText = `Error: ${errorResult.error} - ${errorResult.details}`;
+                    const text = await response.text();
+                    document.getElementById('error').innerText = `Error: ${text}`;
                     document.getElementById('error').style.display = 'block';
                     document.getElementById('result').style.display = 'none';
                 }
             } catch (error) {
-                // Handle any other errors (e.g., network errors, server not responding, etc.)
                 console.error('Error:', error);
                 loadingSpinner.style.display = 'none';
                 document.getElementById('error').innerText = `An error occurred: ${error.message}`;
