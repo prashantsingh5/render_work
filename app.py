@@ -17,10 +17,15 @@ app = Flask(__name__)
 # Check if GPU is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load the pre-trained ResNet50 model and modify the output layer
+# Correctly handle the model path
+model_path = os.path.join(os.path.dirname(__file__), 'models', 'best_bone_cancer_model.pth')
+
+# Load the model
 model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
 model.fc = nn.Linear(model.fc.in_features, 3)  # Adjust for your 3 classes
-model.load_state_dict(torch.load('models/best_bone_cancer_model.pth', map_location=device, weights_only=True))
+
+# Load the model state
+model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device).eval()  # Set the model to evaluation mode
 
 # Define the transformation to match training
@@ -86,7 +91,11 @@ def upload_file():
 @app.errorhandler(Exception)
 def handle_exception(e):
     app.logger.error(f"An internal error occurred: {str(e)}")
-    return "An internal error occurred: {}".format(str(e)), 500
+    return jsonify({
+        'error': 'An internal server error occurred.',
+        'details': str(e)
+    }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Ensure debug mode is off in production
+    app.run(host='0.0.0.0', port=5000, debug=False)
