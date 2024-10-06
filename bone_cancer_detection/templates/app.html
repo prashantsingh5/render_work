@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bone Cancer Detection - By Prashant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🩺 Bone Cancer Detection</h1>
+            <p class="description">Using AI to predict bone cancer types based on X-rays and scans.</p>
+            <img src="{{ url_for('static', filename='images/hero_image.jpg') }}" alt="Bone Cancer Detection" class="hero-image">
+        </header>
+
+        <!-- Form to upload the image -->
+        <form id="uploadForm" class="upload-form" enctype="multipart/form-data">
+            <label for="fileInput" class="file-label">Upload an X-ray Image</label>
+            <input type="file" id="fileInput" name="file" accept="image/*" required>
+            <button type="submit" class="btn">Upload & Predict</button>
+        </form>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="loading-spinner" style="display:none;"></div>
+
+        <!-- Section to display results -->
+        <div id="result" class="result" style="display:none;">
+            <h3>Prediction: <span id="prediction"></span></h3>
+            <p>Chondrosarcoma: <span id="chondrosarcoma_score"></span></p>
+            <p>Ewing Sarcoma: <span id="ewing_sarcoma_score"></span></p>
+            <p>Osteosarcoma: <span id="osteosarcoma_score"></span></p>
+        </div>
+
+        <!-- Error section -->
+        <div id="error" class="error-message" style="display: none;"></div>
+    </div>
+
+    <footer>
+        <p>Developed by <strong>Prashant</strong> | © 2024</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const loadingSpinner = document.getElementById('loading');
+
+        form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                loadingSpinner.style.display = 'none'; // Hide loading spinner
+
+                if (response.ok) {
+                    document.getElementById('prediction').innerText = result.prediction;
+                    document.getElementById('chondrosarcoma_score').innerText = result.scores.Chondrosarcoma.toFixed(2);
+                    document.getElementById('ewing_sarcoma_score').innerText = result.scores['Ewing Sarcoma'].toFixed(2);
+                    document.getElementById('osteosarcoma_score').innerText = result.scores.Osteosarcoma.toFixed(2);
+                    
+                    document.getElementById('result').style.display = 'block';
+                    document.getElementById('error').style.display = 'none';
+                } else {
+                    document.getElementById('error').innerText = result.error;
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('result').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                loadingSpinner.style.display = 'none';
+                document.getElementById('error').innerText = 'An error occurred. Please try again.';
+                document.getElementById('error').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
