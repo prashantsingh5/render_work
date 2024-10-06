@@ -67,7 +67,7 @@
                 });
 
                 const result = await response.json();
-                loadingSpinner.style.display = 'none';  // Hide loading spinner
+                loadingSpinner.style.display = 'none'; // Hide loading spinner
 
                 if (response.ok) {
                     document.getElementById('prediction').innerText = result.prediction;
@@ -78,14 +78,14 @@
                     document.getElementById('result').style.display = 'block';
                     document.getElementById('error').style.display = 'none';
                 } else {
-                    document.getElementById('error').innerText = `Error: ${result.error} - ${result.details}`;
+                    document.getElementById('error').innerText = result.error;
                     document.getElementById('error').style.display = 'block';
                     document.getElementById('result').style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error:', error);
                 loadingSpinner.style.display = 'none';
-                document.getElementById('error').innerText = `An error occurred: ${error.message}`;
+                document.getElementById('error').innerText = 'An error occurred. Please try again.';
                 document.getElementById('error').style.display = 'block';
             }
         });

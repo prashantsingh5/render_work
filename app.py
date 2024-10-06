@@ -19,18 +19,12 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Correctly handle the model path
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'best_bone_cancer_model.pth')
-app.logger.info(f"Loading model from {model_path}")
 
 # Load the model
 model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
 model.fc = nn.Linear(model.fc.in_features, 3)  # Adjust for your 3 classes
-
-try:
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model.to(device).eval()  # Set the model to evaluation mode
-    app.logger.info("Model loaded successfully")
-except Exception as e:
-    app.logger.error(f"Failed to load the model: {str(e)}")
+model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
+model.to(device).eval()  # Set the model to evaluation mode
 
 # Define the transformation to match training
 transform = transforms.Compose([
@@ -75,23 +69,19 @@ def upload_file():
             in_memory_file.seek(0)
             
             # Make prediction
-            try:
-                prediction, probabilities = predict_image(in_memory_file)
+            prediction, probabilities = predict_image(in_memory_file)
 
-                # Convert probabilities to standard Python floats
-                probabilities = [float(prob) for prob in probabilities]
+            # Convert probabilities to standard Python floats
+            probabilities = [float(prob) for prob in probabilities]
 
-                return jsonify({
-                    'prediction': prediction,
-                    'scores': {
-                        'Chondrosarcoma': probabilities[0],
-                        'Ewing Sarcoma': probabilities[1],
-                        'Osteosarcoma': probabilities[2]
-                    }
-                }), 200  # Ensure a successful response
-            except Exception as e:
-                app.logger.error(f"Prediction failed: {str(e)}")
-                return jsonify({'error': 'Prediction failed', 'details': str(e)}), 500
+            return jsonify({
+                'prediction': prediction,
+                'scores': {
+                    'Chondrosarcoma': probabilities[0],
+                    'Ewing Sarcoma': probabilities[1],
+                    'Osteosarcoma': probabilities[2]
+                }
+            }), 200  # Ensure a successful response
 
     # Return the main HTML page on GET request
     return render_template('app.html')
