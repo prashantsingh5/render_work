@@ -14,7 +14,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Load the pre-trained ResNet50 model and modify the output layer
 model = models.resnet50(pretrained=False)
 model.fc = nn.Linear(model.fc.in_features, 3)  # Adjust for your 3 classes
-model.load_state_dict(torch.load(r'C:\Users\pytorch\Desktop\render_work\best_bone_cancer_model.pth', map_location=device))
+model.load_state_dict(torch.load('models/best_bone_cancer_model.pth', map_location=device))
+
 model.to(device).eval()  # Set the model to evaluation mode
 
 # Define the transformation to match training
