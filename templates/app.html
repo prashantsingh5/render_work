@@ -66,13 +66,10 @@
                     body: formData
                 });
 
+                const result = await response.json();
                 loadingSpinner.style.display = 'none';  // Hide loading spinner
 
-                // Check if the response is OK (status code 200-299)
                 if (response.ok) {
-                    const result = await response.json();
-
-                    // Display results
                     document.getElementById('prediction').innerText = result.prediction;
                     document.getElementById('chondrosarcoma_score').innerText = result.scores.Chondrosarcoma.toFixed(2);
                     document.getElementById('ewing_sarcoma_score').innerText = result.scores['Ewing Sarcoma'].toFixed(2);
@@ -81,8 +78,7 @@
                     document.getElementById('result').style.display = 'block';
                     document.getElementById('error').style.display = 'none';
                 } else {
-                    const text = await response.text();
-                    document.getElementById('error').innerText = `Error: ${text}`;
+                    document.getElementById('error').innerText = `Error: ${result.error} - ${result.details}`;
                     document.getElementById('error').style.display = 'block';
                     document.getElementById('result').style.display = 'none';
                 }
