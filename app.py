@@ -98,11 +98,15 @@ def upload_file():
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    # Log the error details
     app.logger.error(f"An internal error occurred: {str(e)}")
+    
+    # Return a proper JSON response with the error
     return jsonify({
         'error': 'An internal server error occurred.',
-        'details': str(e)
+        'details': str(e)  # This provides the actual exception message
     }), 500
+
 
 if __name__ == '__main__':
     # Ensure debug mode is off in production
